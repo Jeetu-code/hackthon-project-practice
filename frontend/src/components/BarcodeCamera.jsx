@@ -8,11 +8,28 @@ const videoRef = useRef(null);
 useEffect(()=>{
 if(!deviceId) return;
 const codeReader = new BrowserMultiFormatReader();
-
-codeReader.decodeFromConstraints({video:{facingMode:"environment"}},videoRef.current,(result,err)=>{if(result){console.log("Scanned Barcode :",result.getText());}});
+ codeReader
+      .decodeFromConstraints(
+        {
+          video: {
+            facingMode: { ideal: "environment" }
+          }
+        },
+        videoRef.current,
+        (result, err) => {
+          if (result) {
+            console.log("Scanned:", result.getText());
+          }
+        }
+      )
+      .then(ctrl => {
+        controls = ctrl;
+      });
 
 return ()=>{
-codeReader.reset();
+if(controls){
+controls.stop();
+}
 };
 },[deviceId]);
 return (
