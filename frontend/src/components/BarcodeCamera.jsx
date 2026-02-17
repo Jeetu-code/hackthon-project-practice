@@ -9,7 +9,7 @@ useEffect(()=>{
 if(!deviceId) return;
 const codeReader = new BrowserMultiFormatReader();
 
-codeReader.decodeFromVideoDevice(deviceId,videoRef.current,(result,err)=>{if(result){console.log("Scanned Barcode :",result.getText());}});
+codeReader.decodeFromVideoDevice({video:{facingMode:"environment"}},videoRef.current,(result,err)=>{if(result){console.log("Scanned Barcode :",result.getText());}});
 
 return ()=>{
 codeReader.reset();

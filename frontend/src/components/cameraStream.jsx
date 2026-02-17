@@ -8,7 +8,7 @@ useEffect(()=>{
 async function startCamera(){
 if(!deviceId) return;
 try{
-const stream = await navigator.mediaDevices.getUserMedia({video:{deviceId:{facingMode:"environment"}}});
+const stream = await navigator.mediaDevices.getUserMedia({video:deviceId});
 videoRef.current.srcObject=stream;
 }
 catch(err){
