@@ -47,9 +47,10 @@ setup();
 <option key={device.deviceId} value={device.deviceId}>{device.label}</option>
 ))}
 </select>
-<BarcodeCamera deviceId={selectedBarcode}/>
-<BinCamera  deviceId={selectedBin}/>
-<CCTVValidationCamera deviceId={selectedCCTV}/>
+
+{selectedBarcode && <BarcodeCamera deviceId={selectedBarcode} />}
+{selectedBin && <BinCamera deviceId={selectedBin} />}
+{selectedCCTV && <CCTVValidationCamera deviceId={selectedCCTV} />}
 </>
   )
 }
