@@ -3,12 +3,12 @@ import {useEffect,useRef} from "react";
 
 export default function CameraStream({deviceId}){
 const videoRef = useRef(null);
-
+console.log(deviceId);
 useEffect(()=>{
 async function startCamera(){
 if(!deviceId) return;
 try{
-const stream = await navigator.mediaDevices.getUserMedia({video:deviceId});
+const stream = await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:deviceId}}});
 videoRef.current.srcObject=stream;
 }
 catch(err){
