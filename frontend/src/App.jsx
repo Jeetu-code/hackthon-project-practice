@@ -6,7 +6,6 @@ const [barcode,setBarcode]=useState("barcode is supported");
 const [barcodeDector,setBarcodeDector]=useState(false);
 useEffect(()=>{
 let stream;
-let interval;
 async function startcamera(){
 try{
  // List cameras and microphones.
@@ -29,24 +28,19 @@ if (!("BarcodeDetector" in globalThis)) {
   const barcodeDetector = new BarcodeDetector({
     formats: ["code_39", "codabar", "ean_13"],
   });
-interval = setInterval(async () => {
-        if (videoRef.current) {
-          try {
-            const barcodes = await detector.detect(videoRef.current);
-            if (barcodes.length > 0) {
-              setBarcode(barcodes[0].rawValue);
-            }
-          } catch (err) {
-            console.log(err);
-          }
-        }
-      }, 500); 
+barcodeDetector
+  .detect(imageEl)
+  .then((barcodes) => {
+    barcodes.forEach((barcode) => console.log(barcode.rawValue));
+  })
+  .catch((err) => {
+    console.error(err);
+  });
 }
 
 
 return ()=>{
 if(stream){stream.getTracks().forEach((track)=>(track.stop()));}
-if(interval){clearInterval(interval);}
 };
 },[front]);
 
