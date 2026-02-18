@@ -29,7 +29,7 @@ function App() {
     let controls;
 
     async function startScanner() {
-	await new promise(resolve => setTimeout(resolve,300));
+	await new Promise(resolve => setTimeout(resolve,300));
       controls = await codeReader.decodeFromVideoDevice(
         selectedDeviceId,
         videoRef.current,
