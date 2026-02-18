@@ -1,66 +1,71 @@
-import {useRef,useEffect,useState} from "react";
+import { useRef, useEffect, useState } from "react";
+import { BrowserMultiFormatReader } from "@zxing/browser";
+
 function App() {
-const videoRef = useRef(null);
-const [front,setFront] = useState(false);
-const [barcode,setBarcode]=useState("");
-const [barcodeDector,setBarcodeDector]=useState("barcode is supported");
-useEffect(()=>{
-let stream;
-let interval;
-async function startcamera(){
-try{
- // List cameras and microphones.
-stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:front?"user":"environment"}});
-videoRef.current.srcObject =stream;
-}catch(err){
-console.log("camera error :",err);
-}
-}
-startcamera();
+  const videoRef = useRef(null);
+  const [devices, setDevices] = useState([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState("");
+  const [barcode, setBarcode] = useState("");
 
-// check compatibility
-if (!("BarcodeDetector" in globalThis)) {
-	setBarcodeDector("Barcode Detector is not supported by this browser.");
-  console.log("Barcode Detector is not supported by this browser.");
-} else {
-  console.log("Barcode Detector supported!");
+  useEffect(() => {
+    async function getDevices() {
+      await navigator.mediaDevices.getUserMedia({ video: true });
+      const allDevices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = allDevices.filter(d => d.kind === "videoinput");
+      setDevices(videoDevices);
 
-  // create new detector
-  const detector = new BarcodeDetector({
-    formats: ["code_39", "codabar", "ean_13"],
-  });
-interval = setInterval(async () => {
-        if (videoRef.current) {
-          try {
-            const barcodes = await detector.detect(videoRef.current);
-            if (barcodes.length > 0) {
-              setBarcode(barcodes[0].rawValue);
-            }
-          } catch (err) {
-            console.log(err);
+      if (videoDevices.length > 0) {
+        setSelectedDeviceId(videoDevices[0].deviceId);
+      }
+    }
+
+    getDevices();
+  }, []);
+
+  useEffect(() => {
+    if (!selectedDeviceId) return;
+
+    const codeReader = new BrowserMultiFormatReader();
+    let controls;
+
+    async function startScanner() {
+      controls = await codeReader.decodeFromVideoDevice(
+        selectedDeviceId,
+        videoRef.current,
+        (result, err) => {
+          if (result) {
+            setBarcode(result.getText());
           }
         }
-      }, 500); 
+      );
+    }
+
+    startScanner();
+
+    return () => {
+      if (controls) controls.stop();
+    };
+  }, [selectedDeviceId]);
+
+  return (
+    <>
+      <h2>ZXing Barcode Scanner</h2>
+
+      <select onChange={(e) => setSelectedDeviceId(e.target.value)}>
+        {devices.map(device => (
+          <option key={device.deviceId} value={device.deviceId}>
+            {device.label}
+          </option>
+        ))}
+      </select>
+
+      <br /><br />
+
+      <video ref={videoRef} autoPlay playsInline width="300" />
+
+      <div>Result: {barcode}</div>
+    </>
+  );
 }
 
-
-return ()=>{
-if(stream){stream.getTracks().forEach((track)=>(track.stop()));}
-if(interval){clearInterval(interval);}
-};
-},[front]);
-
-return (
-<>
-<h2>camera flip</h2>
-<button onClick={()=>setFront(prev=> !prev)}>Flip camera</button>
-<br/>
-<br/>
-<video ref={videoRef} autoPlay playsInline/>
-
-<div>{barcode}{barcodeDector}</div>
-</>
-);
-}
-
-export default App
+export default App;
