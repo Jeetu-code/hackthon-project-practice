@@ -2,10 +2,11 @@ import {useRef,useEffect,useState} from "react";
 function App() {
 const videoRef = useRef(null);
 const [front,setFront] = useState(false);
-const [barcode,setBarcode]=useState("barcode is supported");
-const [barcodeDector,setBarcodeDector]=useState(false);
+const [barcode,setBarcode]=useState("");
+const [barcodeDector,setBarcodeDector]=useState("barcode is supported");
 useEffect(()=>{
 let stream;
+let interval;
 async function startcamera(){
 try{
  // List cameras and microphones.
@@ -19,28 +20,33 @@ startcamera();
 
 // check compatibility
 if (!("BarcodeDetector" in globalThis)) {
-	setBarcode("Barcode Detector is not supported by this browser.");
+	setBarcodeDector("Barcode Detector is not supported by this browser.");
   console.log("Barcode Detector is not supported by this browser.");
 } else {
   console.log("Barcode Detector supported!");
 
   // create new detector
-  const barcodeDetector = new BarcodeDetector({
+  const detector = new BarcodeDetector({
     formats: ["code_39", "codabar", "ean_13"],
   });
-barcodeDetector
-  .detect(imageEl)
-  .then((barcodes) => {
-    barcodes.forEach((barcode) => console.log(barcode.rawValue));
-  })
-  .catch((err) => {
-    console.error(err);
-  });
+interval = setInterval(async () => {
+        if (videoRef.current) {
+          try {
+            const barcodes = await detector.detect(videoRef.current);
+            if (barcodes.length > 0) {
+              setBarcode(barcodes[0].rawValue);
+            }
+          } catch (err) {
+            console.log(err);
+          }
+        }
+      }, 500); 
 }
 
 
 return ()=>{
 if(stream){stream.getTracks().forEach((track)=>(track.stop()));}
+if(interval){clearInterval(interval);}
 };
 },[front]);
 
@@ -52,7 +58,7 @@ return (
 <br/>
 <video ref={videoRef} autoPlay playsInline/>
 
-<div>{barcode}</div>
+<div>{barcode}{barcodeDector}</div>
 </>
 );
 }
