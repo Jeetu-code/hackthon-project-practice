@@ -29,6 +29,7 @@ function App() {
     let controls;
 
     async function startScanner() {
+	await new promise(resolve => setTimeout(resolve,300));
       controls = await codeReader.decodeFromVideoDevice(
         selectedDeviceId,
         videoRef.current,
@@ -44,6 +45,9 @@ function App() {
 
     return () => {
       if (controls) controls.stop();
+	if(videoRef.current){
+	videoRef.current.srcObject = null;
+	}
     };
   }, [selectedDeviceId]);
 
